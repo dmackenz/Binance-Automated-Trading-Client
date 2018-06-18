@@ -1,5 +1,7 @@
 import math
 from binance.client import Client
+from binance.enums import *
+from binance.exceptions import BinanceAPIException, BinanceWithdrawException
 
 class BinanceHelper(object):
     def __init__(self, api_key, api_secret, base_currency, coin_currency):
@@ -55,4 +57,19 @@ class BinanceHelper(object):
     def sell(self):
         price, quantity = self.get_sell_info()
         self.client.order_market_sell(symbol=self.symbol, quantity=quantity)
+        
+    def limit_buy(self):
+        price, quantity = self.get_buy_info()
+        try:
+            order = self.client.create_order(
+                symbol=self.symbol,
+                side=SIDE_BUY,
+                type=ORDER_TYPE_LIMIT,
+                timeInForce=TIME_IN_FORCE_IOC,
+                quantity=quantity,
+                price=str(price))
+        except BinanceAPIException as e:
+            print(e.status_code)
+            print(e.message)
+        return order
 
